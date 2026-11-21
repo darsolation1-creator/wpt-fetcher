@@ -1,12 +1,31 @@
 name: fetch
-on: [push, workflow_dispatch]
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+concurrency:
+  group: wpt-fetch
+  cancel-in-progress: false
+permissions:
+  actions: write
+  contents: read
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: pip install -q -r requirements.txt
-      - run: python validate.py
+      - name: fetch loop (every 60s, pushes to scanner)
+        env:
+          WPT_INGEST_URL: ${{ secrets.WPT_INGEST_URL }}
+          WPT_INGEST_TOKEN: ${{ secrets.WPT_INGEST_TOKEN }}
+        run: python fetch_and_push.py
+      - name: re-trigger next run (chain for 24/7)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run fetch.yml --repo ${{ github.repository }} || true
