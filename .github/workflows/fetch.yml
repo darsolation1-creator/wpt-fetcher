@@ -24,8 +24,3 @@ jobs:
           WPT_INGEST_URL: ${{ secrets.WPT_INGEST_URL }}
           WPT_INGEST_TOKEN: ${{ secrets.WPT_INGEST_TOKEN }}
         run: python fetch_and_push.py
-      - name: re-trigger next run (chain for 24/7)
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run fetch.yml --repo ${{ github.repository }} || true
