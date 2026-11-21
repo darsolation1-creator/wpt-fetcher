@@ -22,7 +22,8 @@ def push(b64list):
     payload = json.dumps({"ts": time.time(), "tournaments": b64list}).encode()
     req = urllib.request.Request(
         INGEST_URL, data=payload, method="POST",
-        headers={"Content-Type": "application/json", "X-WPT-Token": INGEST_TOKEN})
+        headers={"Content-Type": "application/json", "X-WPT-Token": INGEST_TOKEN,
+                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"})
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.status, r.read(200).decode()
 
