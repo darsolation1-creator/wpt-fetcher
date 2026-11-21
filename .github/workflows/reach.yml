@@ -1,0 +1,18 @@
+name: reach
+on: [push, workflow_dispatch]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe wpt
+        run: |
+          echo "=== runner egress ip/asn ==="
+          curl -s https://ipinfo.io/json --max-time 15 || true
+          echo ""
+          echo "=== api root ==="
+          curl -s -o /dev/null -w "api_root: %{http_code}\n" https://api.wptglobal.com/ --max-time 20 || true
+          echo "=== /health ==="
+          curl -s -w "\nhealth_code: %{http_code}\n" https://api.wptglobal.com/health --max-time 20 | head -c 300 || true
+          echo ""
+          echo "=== guestlogin POST ==="
+          curl -s -w "\nguestlogin_code: %{http_code}\n" -X POST https://api.wptglobal.com/api/v1/user/guestlogin -H "User-Agent: Mozilla/5.0" -H "Content-Type: application/json" -d '{}' --max-time 20 | head -c 300 || true
